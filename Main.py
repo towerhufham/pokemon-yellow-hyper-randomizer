@@ -151,34 +151,55 @@ def randomizedCryData(rom):
 	shuffleBytes(param2)
 	shuffleBytes(param3)
 	return param1 + param2 + param3
-		
+	
 def randomizedEvolutionLearnsetData(rom):
 	"""
-	Returns a bplist containing pokemon learnset data
+	Returns a bplist containing shuffled pointers to pokemon learnset data
+	Only randomizes pointers between pokemon of the same evolution stage
 	"""
-	dataList = []
-	validIDs = internalIDs()
+	dataList = {"basic": [], "stage1": [], "stage2": []}
+	basicIDs = [1, 2, 3, 4, 5, 6, 11, 12, 13, 15, 17, 19, 23, 24, 25, 26, 27, 29, 30, 33, 34, 36, 37, 40, 42, 43, 44, 47, 48, 51, 53, 55, 57, 58, 59, 60, 64, 65, 70, 71, 72, 76, 77, 78, 82, 84, 88, 90, 92, 96, 98, 100, 102, 106, 107, 108, 109, 112, 123, 132, 133, 148, 153, 157, 163, 165, 169, 170, 171, 173, 176, 177, 180, 185, 188]
+	stage1IDs = [8, 9, 10, 18, 20, 22, 35, 39, 41, 45, 46, 54, 83, 85, 89, 91, 93, 97, 99, 101, 103, 104, 105, 110, 113, 116, 117, 118, 119, 120, 124, 128, 129, 130, 136, 138, 139, 141, 142, 143, 144, 145, 147, 150, 152, 155, 158, 164, 166, 167, 168, 178, 179, 186, 189]
+	stage2IDs = [7, 14, 16, 21, 28, 38, 49, 66, 73, 74, 75, 111, 114, 125, 131, 149, 151, 154, 187, 190]
+	#note: the legendary birds, mew, and mewtwo are counted as stage2
+	#maybe instead of evolution stage, it should be sorted by how many evolutions the pokemon has left?
 	currentid = 1
 	for i in range(242149, 242529, 2): #start of bank to end of bank in steps of 2
 		#there are room for 190 pokemon in this bank, but only 151 are used
 		#we need to make sure we're using valid data (currentid keeps track of which id we're on)
-		if currentid in validIDs:
-			dataList.append((bytePos(rom, i), bytePos(rom, i+1)))
+		if currentid in basicIDs:
+			dataList["basic"].append((bytePos(rom, i), bytePos(rom, i+1)))
+		elif currentid in stage1IDs:
+			dataList["stage1"].append((bytePos(rom, i), bytePos(rom, i+1)))
+		elif currentid in stage2IDs:
+			dataList["stage2"].append((bytePos(rom, i), bytePos(rom, i+1)))
 		currentid += 1
 	
 	#create a clone of the tuples in datalist, then shuffle
-	shuffledList = [t for t in dataList]
-	random.shuffle(shuffledList)
+	shuffledBasic = [t for t in dataList["basic"]]
+	shuffled1 = [t for t in dataList["stage1"]]
+	shuffled2 = [t for t in dataList["stage2"]]
+	random.shuffle(shuffledBasic)
+	random.shuffle(shuffled1)
+	random.shuffle(shuffled2)
 	
-	for i in range(len(dataList)):
-		dataList[i][0].byte = shuffledList[i][0].byte
-		dataList[i][1].byte = shuffledList[i][1].byte
+	for i in range(len(dataList["basic"])):
+		dataList["basic"][i][0].byte = shuffledBasic[i][0].byte
+		dataList["basic"][i][1].byte = shuffledBasic[i][1].byte
+	for i in range(len(dataList["stage1"])):
+		dataList["stage1"][i][0].byte = shuffled1[i][0].byte
+		dataList["stage1"][i][1].byte = shuffled1[i][1].byte
+	for i in range(len(dataList["stage2"])):
+		dataList["stage2"][i][0].byte = shuffled2[i][0].byte
+		dataList["stage2"][i][1].byte = shuffled2[i][1].byte
 	
 	bplist = []
-	for t in dataList:
-		bplist.append(t[0])
-		bplist.append(t[1])
+	for s in dataList:
+		for t in dataList[s]:
+			bplist.append(t[0])
+			bplist.append(t[1])
 	return bplist
+	
 	
 def randomizeNames(output):
 	"""
