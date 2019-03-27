@@ -7,6 +7,6 @@ It will create a new file named "output.gbc" which is the shiny new randomized r
 
 # TODO:
 * Use cheksum to verify rom instead of title
-* Randomize cry data
 * Randomize sprites (or something about them at least)
 * Fix name generation when packaged (?)
+* Test evolution & make it more logical
